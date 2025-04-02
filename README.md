@@ -1,97 +1,62 @@
-Overview
+# OS Scheduler Project
 
-The OS Scheduler is a crucial component of an operating system responsible for CPU scheduling. It selects processes from the ready queue and assigns the CPU based on specific scheduling algorithms. This project involves implementing an OS scheduler that supports multiple scheduling algorithms and visualizes their impact.
+## Overview
 
-Features
+The OS Scheduler is a crucial component of an operating system responsible for CPU scheduling. It selects processes from the ready queue and assigns the CPU based on specific criteria such as the chosen scheduling algorithm and whether the process scheduling is preemptive or non-preemptive. A dispatcher component handles the actual allocation of CPU resources to the selected process.
 
-Process generation module that creates processes with randomly generated parameters.
+This project consists of two main components:
+- **Process Generation Module**
+- **Scheduling Module**
 
-Scheduling module implementing multiple CPU scheduling algorithms.
+## Process Generator Module
 
-Performance analysis including turnaround time, waiting time, and averages.
+The process generator creates a set of processes with the following parameters:
+- **Arrival Time**
+- **Burst Time**
+- **Priority**
 
-Optional visualization of scheduling results through graphs.
+These parameters are randomly generated following the specified distributions. The generator takes an input text file with the following format:
 
-GUI for user interaction.
-
-Modules
-
-1. Process Generator
-
-Generates processes based on input parameters and writes them to a file.
-
-Input Format:
-
+```
 Line 1: Number of processes
 Line 2: Mean and standard deviation for arrival time
 Line 3: Mean and standard deviation for burst time
 Line 4: Lambda for priority
+```
 
-Output Format:
+After processing the input, the module outputs another text file formatted as follows:
 
+```
 Line 1: Number of processes
 Line 2: Process_ID Arrival_Time Burst_Time Priority
+...
+```
 
-2. OS Scheduler
+## OS Scheduler Module
 
-Reads the generated process file and schedules the processes using the following algorithms:
+This module reads the output from the process generator and schedules processes from the Ready Queue using various algorithms. The implemented scheduling algorithms include:
 
-Non-Preemptive Highest Priority First
+1. **Non-Preemptive Highest Priority First**
+2. **First Come First Serve (FCFS)**
+3. **Round Robin**
+4. **Preemptive Shortest Remaining Time First (SRTF)**
 
-First Come First Serve (FCFS)
+For each algorithm, the project demonstrates the impact on the same input by calculating and presenting:
+- Turnaround time
+- Waiting time
+- Average values
 
-Round Robin
+A bonus will be awarded for visualizing the results using graphs. Advanced implementations such as a website or a full-fledged application will also receive extra credit.
 
-Preemptive Shortest Remaining Time First (SRTF)
+## Assumptions
 
-The scheduler presents detailed analysis and comparison of each algorithm.
+- **Priority Tie-Breaking:** Any tie between processes (e.g., same arrival time and priority) is broken by the order of processes (e.g., P1 executes before P2).
+- **Priority Value:** The greatest numerical value indicates the highest priority.
+- **No I/O Wait:** Processes do not wait for events or request I/O, meaning they do not enter a waiting state.
 
-Assumptions
+## Deliverables
 
-Higher numerical priority value means higher priority.
-
-No I/O waiting; all processes remain in the ready queue until execution.
-
-Ties in arrival time and priority are resolved in process order.
-
-Deliverables
-
-Sample input and output files.
-
-Source code.
-
-Executable file.
-
-Report including analysis and screenshots.
-
-Requirements
-
-Any programming language of choice.
-
-GUI implementation is mandatory.
-
-Installation
-
-Clone the repository:
-
-git clone https://github.com/your-repo/os-scheduler.git
-
-Navigate to the project directory:
-
-cd os-scheduler
-
-Install dependencies (if applicable):
-
-pip install -r requirements.txt  # Python example
-
-Run the application:
-
-python main.py  # Example command
-
-Usage
-
-Provide input files with required parameters.
-
-Choose a scheduling algorithm.
-
-View the results and performance analysis.
+1. **Sample Input and Output Files**
+2. **Source Code**
+3. **Executable File**
+4. **Report Document**
