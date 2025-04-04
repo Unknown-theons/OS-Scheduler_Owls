@@ -22,11 +22,11 @@ def calc_Mean_STDR(ProccessesDictinory,Type):
         NumOfProccesses = len(ProccessesDictinory)
         
         for i in range (NumOfProccesses):
-             mean = ProccessesDictinory["P"+str(i)][Type] + mean
+            mean = ProccessesDictinory["P"+str(i)][Type] + mean
         mean = mean/NumOfProccesses
 
         for n in range (NumOfProccesses):
-             STDR = (ProccessesDictinory["P"+str(n)][Type] - mean)**2 + STDR
+            STDR = (ProccessesDictinory["P"+str(n)][Type] - mean)**2 + STDR
         STDR = STDR / NumOfProccesses
 
         STDR = math.sqrt(STDR)
@@ -42,7 +42,7 @@ def generateDataPoints():
 
     numOf_Processes = random.randint(3, 10) #generate random number between 3 and 10 for proccesses
 
-     # loop the number of proccesses generated
+    # loop the number of proccesses generated
     for i in range(numOf_Processes):
         DIC_process_ID = "P" + str(i)  # convert process ID to string cuz error if not
         DIC_process_ArrivalTime = random.randint(0, 15)
@@ -65,10 +65,10 @@ def generateFileInput(ProccessesDictinory):
         numOf_Processes = len(ProccessesDictinory)#check how many proccesses are there
 
         with open(inputFile, "w") as file:
-             file.write(f"\nProccesses Number: {numOf_Processes}\n")
-             file.write(f"Mean and Standard Deviation for Arrival Time: {mean_STRD_4_Arrivaltime}\n")
-             file.write(f"Mean and Standard Deviation for Burst Time: {mean_STRD_4_BurstTime}\n")
-             file.write(f"Lambda Priority: {lambda_value}\n")
+            file.write(f"\nProccesses Number: {numOf_Processes}\n")
+            file.write(f"Mean and Standard Deviation for Arrival Time: {mean_STRD_4_Arrivaltime}\n")
+            file.write(f"Mean and Standard Deviation for Burst Time: {mean_STRD_4_BurstTime}\n")
+            file.write(f"Lambda Priority: {lambda_value}\n")
 
 def readFile():
     # Open the file in read mode

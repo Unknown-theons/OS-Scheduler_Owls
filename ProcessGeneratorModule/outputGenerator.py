@@ -1,10 +1,10 @@
 import re
 import numpy as np
 def read_Entire_File(Filename):
-    # Open the file in read mode
-    with open(Filename, "r") as file:
-        content = file.read()  # Reads the entire content of the file
-        print(content)  # Print the content to the console
+   # Open the file in read mode
+   with open(Filename, "r") as file:
+   content = file.read()  # Reads the entire content of the file
+   print(content)  # Print the content to the console
 
 def read_line_by_line(Filename):
    with open(Filename,"r") as file:
@@ -14,15 +14,15 @@ def read_line_by_line(Filename):
 
 def Extract_numbers(line_Order, usecase):
    if usecase == 1: #first UseCase for Int Numbers
-    str_2_int = ""
-    for char in line_Order:
-       if char.isdigit():
-          str_2_int += char   
-    try:
-       str_2_int = int(str_2_int)
-    except ValueError:
-       print("there's a slicing error, code: SE_LN21")
-    return str_2_int
+      str_2_int = ""
+      for char in line_Order:
+      if char.isdigit():
+         str_2_int += char   
+   try:
+      str_2_int = int(str_2_int)
+   except ValueError:
+      print("there's a slicing error, code: SE_LN21")
+   return str_2_int
    
    if usecase == 2: #Second UseCase for Float and multiple numbers
       str_2_float = [float(n) for n in re.findall(r'\d+\.\d+',line_Order)]
@@ -46,7 +46,7 @@ def Predict_and_Confirm_Values(ProcessesNumber, Mean, STDE):
 
    # If last value is negative, adjust it to ensure a non-zero value
    if last_Value < 0:
-       last_Value = 0  # Set it to zero only if its necessary to match the required sum
+      last_Value = 0  # Set it to zero only if its necessary to match the required sum
 
    # Add the last value to the list
    list_of_processes = np.append(list_of_processes, last_Value)
@@ -76,13 +76,13 @@ def Merge_lists_to_DIC(ProcessesNumber, AT_List, BT_List, P_List):
    return ProcessDic
 
 def Write_DIC_to_Text_File(ProcessDic, filename):
-    # Open a file to write
-    with open(filename, 'w') as file:
-        # Write the header row
-        file.write(f"{'Process ID':<15}{'Arrival Time':<15}{'Burst Time':<15}{'Priority':<15}\n")
-        
-        # Write each process's details
-        for key, value in ProcessDic.items():
+   # Open a file to write
+   with open(filename, 'w') as file:
+      # Write the header row
+      file.write(f"{'Process ID':<15}{'Arrival Time':<15}{'Burst Time':<15}{'Priority':<15}\n")
+      
+      # Write each process's details
+      for key, value in ProcessDic.items():
             # Extract details from the dictionary
             process_id = value["Process ID:"]
             arrival_time = value["Arrival Time:"]

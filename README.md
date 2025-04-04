@@ -5,12 +5,14 @@
 The OS Scheduler is a crucial component of an operating system responsible for CPU scheduling. It selects processes from the ready queue and assigns the CPU based on specific criteria such as the chosen scheduling algorithm and whether the process scheduling is preemptive or non-preemptive. A dispatcher component handles the actual allocation of CPU resources to the selected process.
 
 This project consists of two main components:
+
 - **Process Generation Module**
 - **Scheduling Module**
 
 ## Process Generator Module
 
 The process generator creates a set of processes with the following parameters:
+
 - **Arrival Time**
 - **Burst Time**
 - **Priority**
@@ -42,6 +44,7 @@ This module reads the output from the process generator and schedules processes 
 4. **Preemptive Shortest Remaining Time First (SRTF)**
 
 For each algorithm, the project demonstrates the impact on the same input by calculating and presenting:
+
 - Turnaround time
 - Waiting time
 - Average values
