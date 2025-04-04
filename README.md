@@ -1,62 +1,89 @@
-# OS Scheduler Project
+Folder Structure
+InputGenerator.py – Generates process data and writes initial parameters to an input file.
 
-## Overview
+outputGenerator.py – Reads the input file, refines the data by predicting process metrics, and writes a comprehensive processes file.
 
-The OS Scheduler is a crucial component of an operating system responsible for CPU scheduling. It selects processes from the ready queue and assigns the CPU based on specific criteria such as the chosen scheduling algorithm and whether the process scheduling is preemptive or non-preemptive. A dispatcher component handles the actual allocation of CPU resources to the selected process.
+inputFile.txt – Auto-generated file containing raw process statistics.
 
-This project consists of two main components:
-- **Process Generation Module**
-- **Scheduling Module**
+processes.txt – Auto-generated file containing the final merged process details with calculated priorities.
 
-## Process Generator Module
+InputGenerator.py
+This module is responsible for the initial data generation process. Its key functionalities include:
 
-The process generator creates a set of processes with the following parameters:
-- **Arrival Time**
-- **Burst Time**
-- **Priority**
+File Management:
+Checks for the existence of inputFile.txt to avoid data collision. If the file exists, it logs an error message; otherwise, it creates a new file.
 
-These parameters are randomly generated following the specified distributions. The generator takes an input text file with the following format:
+Process Data Generation:
+Randomly generates a set of processes (between 3 and 10). For each process, it assigns:
 
-```
-Line 1: Number of processes
-Line 2: Mean and standard deviation for arrival time
-Line 3: Mean and standard deviation for burst time
-Line 4: Lambda for priority
-```
+An arrival time (random integer between 0 and 15).
 
-After processing the input, the module outputs another text file formatted as follows:
+A burst time (random integer between 1 and 25).
 
-```
-Line 1: Number of processes
-Line 2: Process_ID Arrival_Time Burst_Time Priority
-...
-```
+Statistical Calculation:
+Computes the mean and standard deviation for both arrival and burst times using a custom function. These values are crucial for downstream processing.
 
-## OS Scheduler Module
+File Output:
+Writes the following to inputFile.txt:
 
-This module reads the output from the process generator and schedules processes from the Ready Queue using various algorithms. The implemented scheduling algorithms include:
+Total number of processes.
 
-1. **Non-Preemptive Highest Priority First**
-2. **First Come First Serve (FCFS)**
-3. **Round Robin**
-4. **Preemptive Shortest Remaining Time First (SRTF)**
+Calculated mean and standard deviation for arrival and burst times.
 
-For each algorithm, the project demonstrates the impact on the same input by calculating and presenting:
-- Turnaround time
-- Waiting time
-- Average values
+A randomly generated lambda value representing a priority centering parameter.
 
-A bonus will be awarded for visualizing the results using graphs. Advanced implementations such as a website or a full-fledged application will also receive extra credit.
+outputGenerator.py
+This module takes the baton to refine and enhance the initial data. Its primary responsibilities include:
 
-## Assumptions
+Data Extraction:
+Reads inputFile.txt line-by-line and extracts numerical values using regular expressions. This includes:
 
-- **Priority Tie-Breaking:** Any tie between processes (e.g., same arrival time and priority) is broken by the order of processes (e.g., P1 executes before P2).
-- **Priority Value:** The greatest numerical value indicates the highest priority.
-- **No I/O Wait:** Processes do not wait for events or request I/O, meaning they do not enter a waiting state.
+The number of processes.
 
-## Deliverables
+Mean and standard deviation values for arrival and burst times.
 
-1. **Sample Input and Output Files**
-2. **Source Code**
-3. **Executable File**
-4. **Report Document**
+The lambda priority value.
+
+Data Prediction & Confirmation:
+Utilizes NumPy to generate values that align with the extracted statistical parameters. It ensures that:
+
+The predicted arrival and burst times closely match the intended mean and standard deviation.
+
+The final adjustment of values ensures consistency with the desired sum and distribution properties.
+
+Priority Generation:
+Generates process priorities using a Poisson distribution, adding an extra layer of realistic randomness to the simulation.
+
+Data Merging & Final Output:
+Merges the individual data components into a unified dictionary, which is then written to processes.txt. The output is formatted neatly in columns for clarity and ease of interpretation.
+
+How to Run
+Setup:
+Ensure you have Python 3 installed along with the required libraries:
+
+numpy
+
+math
+
+random
+
+re
+
+os
+
+Execution:
+
+Run InputGenerator.py first to generate the initial input data:
+
+bash
+Copy
+Edit
+python InputGenerator.py
+Next, run outputGenerator.py to process the data and generate the final output:
+
+bash
+Copy
+Edit
+python outputGenerator.py
+Outcome:
+Upon successful execution, you'll find inputFile.txt and processes.txt in the folder, containing detailed process metrics ready for further analysis.
