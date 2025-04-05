@@ -1,5 +1,5 @@
-import os
 import sys
+import os
 
 # Add the ProcessGeneratorModule folder to the Python path
 # sys.path.append(os.path.abspath("G:\Visual Studio Code Folders\OS-Scheduler_Owls\ProcessGeneratorModule"))
