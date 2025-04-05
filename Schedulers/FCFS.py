@@ -1,7 +1,9 @@
 import os
+import sys
 
 # Add the ProcessGeneratorModule folder to the Python path
-#sys.path.append(os.path.abspath(r"B:\Akuma\Uni\2nd year\second semester\OS\OS-Scheduler_Owls-main\OS-Scheduler_Owls-main\ProcessGeneratorModule"))
+# sys.path.append(os.path.abspath("G:\Visual Studio Code Folders\OS-Scheduler_Owls\ProcessGeneratorModule"))
+sys.path.append(os.path.abspath("E:\MY PROJECT\Web devolopment\OS-Scheduler_Owls\ProcessGeneratorModule"))
 
 class Process:
     def __init__(self, pid, arrival_time, burst_time, priority):
@@ -104,7 +106,8 @@ def print_results(results):
 
 def main():
     # Path to the processes.txt file
-    file_path = os.path.join(os.path.dirname(__file__), "..", "ProcessGeneratorModule", "processes.txt")
+    # file_path = "G:\Visual Studio Code Folders\OS-Scheduler_Owls\ProcessGeneratorModule\processes.txt"
+    file_path = "E:\MY PROJECT\Web devolopment\OS-Scheduler_Owls\ProcessGeneratorModule\processes.txt"
     
     # Read processes from file
     processes = read_processes(file_path)

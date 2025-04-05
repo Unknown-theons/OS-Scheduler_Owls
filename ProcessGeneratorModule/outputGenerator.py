@@ -3,8 +3,8 @@ import numpy as np
 def read_Entire_File(Filename):
    # Open the file in read mode
    with open(Filename, "r") as file:
-   content = file.read()  # Reads the entire content of the file
-   print(content)  # Print the content to the console
+      content = file.read()  # Reads the entire content of the file
+      print(content)  # Print the content to the console
 
 def read_line_by_line(Filename):
    with open(Filename,"r") as file:
@@ -14,15 +14,15 @@ def read_line_by_line(Filename):
 
 def Extract_numbers(line_Order, usecase):
    if usecase == 1: #first UseCase for Int Numbers
-      str_2_int = ""
-      for char in line_Order:
-      if char.isdigit():
-         str_2_int += char   
-   try:
-      str_2_int = int(str_2_int)
-   except ValueError:
-      print("there's a slicing error, code: SE_LN21")
-   return str_2_int
+    str_2_int = ""
+    for char in line_Order:
+       if char.isdigit():
+          str_2_int += char   
+    try:
+       str_2_int = int(str_2_int)
+    except ValueError:
+       print("there's a slicing error, code: SE_LN21")
+    return str_2_int
    
    if usecase == 2: #Second UseCase for Float and multiple numbers
       str_2_float = [float(n) for n in re.findall(r'\d+\.\d+',line_Order)]

@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FCFS Scheduler Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            padding: 20px;
+            
+            
+        }
+        /* .results-table { margin-top: 20px; }
+        .average-stats { margin-top: 20px; } */
+        
+    </style>
+</head>
+<body>
+    <div class="container firstpart">
+        <div class="d-flex flex-column justify-content-center align-items-center" style="height: 100vh;">
+            <button class="btn btn-primary d-flex align-self-center" onclick="Show()">Show Processes Data</button>
+            <pre class="mt-3" id="output1"></pre>
+            <button class="btn btn-dark align-self-center" onclick="generateAndShow()">Generate</button>
+            <pre class="mt-3" id="output2"></pre>
+            <div id="generateStatus" class="mt-2"></div>
+            
+        </div>
+    </div>
+
+
+
+
+
+    <div class="container">
+        <h1 class="mb-4">🔄 FCFS Scheduling Results</h1>
+        
+        <div class="table-responsive results-table">
+            <table class="table table-striped table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Process ID</th>
+                        <th>Arrival Time</th>
+                        <th>Burst Time</th>
+                        <th>Completion Time</th>
+                        <th>Turnaround Time</th>
+                        <th>Waiting Time</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for process in results %}
+                    <tr>
+                        <td>{{ process['Process ID'] }}</td>
+                        <td>{{ "%.2f"|format(process['Arrival Time']) }}</td>
+                        <td>{{ "%.2f"|format(process['Burst Time']) }}</td>
+                        <td>{{ "%.2f"|format(process['Completion Time']) }}</td>
+                        <td>{{ "%.2f"|format(process['Turnaround Time']) }}</td>
+                        <td>{{ "%.2f"|format(process['Waiting Time']) }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="card average-stats">
+            <div class="card-body">
+                <h5 class="card-title">Average Statistics</h5>
+                <p class="card-text">Average Waiting Time: {{ "%.2f"|format(avg_waiting) }}</p>
+                <p class="card-text">Average Turnaround Time: {{ "%.2f"|format(avg_turnaround) }}</p>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+    <script>
+        function Show() {
+            fetch('/get_processes_data')
+                .then(response => response.text())
+                .then(data => {
+                    const output = document.getElementById('output1');
+                    output.innerHTML = '<h3 class="mb-3">Processes Data</h3>';
+                    
+                    const table = document.createElement('table');
+                    table.classList.add('table', 'table-striped', 'table-bordered');
+                    
+                    // Create header
+                    const thead = document.createElement('thead');
+                    thead.classList.add('table-dark');
+                    const headerRow = document.createElement('tr');
+                    const headers = ['Process ID', 'Arrival Time', 'Burst Time', 'Priority'];
+                    headers.forEach(headerText => {
+                        const th = document.createElement('th');
+                        th.textContent = headerText;
+                        headerRow.appendChild(th);
+                    });
+                    thead.appendChild(headerRow);
+                    table.appendChild(thead);
+
+                    const tbody = document.createElement('tbody');
+                    const rows = data.trim().split('\n');
+                    
+                    // Skip header row if it exists
+                    const startIndex = rows[0].toLowerCase().includes('process') ? 1 : 0;
+                    
+                    for (let i = startIndex; i < rows.length; i++) {
+                        const row = rows[i].trim();
+                        if (row) {
+                            const tr = document.createElement('tr');
+                            const columns = row.split(/\s+/);
+                            columns.forEach(col => {
+                                const td = document.createElement('td');
+                                td.textContent = col;
+                                tr.appendChild(td);
+                            });
+                            tbody.appendChild(tr);
+                        }
+                    }
+                    table.appendChild(tbody);
+                    output.appendChild(table);
+                })
+                .catch(error => {
+                    console.error('Error fetching processes data:', error);
+                    document.getElementById('output1').innerHTML = '<div class="alert alert-danger">Error loading processes data</div>';
+                });
+        }
+
+        async function generateAndShow() {
+            const statusDiv = document.getElementById('generateStatus');
+            statusDiv.innerHTML = '<div class="alert alert-info">Generating new processes...</div>';
+            
+            try {
+                // Call the generate endpoint
+                const response = await fetch('/generate', {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    statusDiv.innerHTML = '<div class="alert alert-success">Generation successful!</div>';
+                    // Show the new process data immediately
+                    Show();
+                } else {
+                    throw new Error(data.message || 'Generation failed');
+                }
+            } catch (error) {
+                console.error('Error generating processes:', error);
+                statusDiv.innerHTML = `<div class="alert alert-danger">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+
+
+</body>
+</html>
