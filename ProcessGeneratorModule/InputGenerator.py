@@ -1,5 +1,3 @@
-#each process has burst time, pirority, arrival time, process id 
-#mean and standard devi for burst time and arrival time
 import random
 import os
 import numpy as np

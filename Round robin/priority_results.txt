@@ -1,0 +1,4 @@
+Priority Scheduling Results
+=======================
+
+Process ID | Arrival Time | Burst Time | Priority | Completion Time | Turnaround Time | Waiting Time

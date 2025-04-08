@@ -35,7 +35,12 @@ def read_processes(file_path):
 def srtf_scheduling(processes):
     """Implement SRTF scheduling algorithm with float-based timing."""
     if not processes:
-        return []
+        return {
+            "processes": [],
+            "avg_waiting_time": 0,
+            "avg_turnaround_time": 0,
+            "total_execution_time": 0
+        }
 
     n = len(processes)
     current_time = 0.0
@@ -65,17 +70,16 @@ def srtf_scheduling(processes):
         _, _, pid = heappop(ready_queue)
         process = process_map[pid]
 
-        # Set start time if not already set
+        # Set start time if not set
         if process.start_time == -1:
             process.start_time = current_time
 
-        # Execute for 0.1 unit
+        # Process for 0.1 time unit
         process.remaining_time -= 0.1
         process.remaining_time = round(process.remaining_time, 1)
         current_time += 0.1
         current_time = round(current_time, 1)
 
-        # If completed
         if process.remaining_time <= 0:
             process.completion_time = current_time
             process.turnaround_time = process.completion_time - process.arrival_time
@@ -87,60 +91,92 @@ def srtf_scheduling(processes):
                 "Burst Time": process.burst_time,
                 "Completion Time": process.completion_time,
                 "Turnaround Time": process.turnaround_time,
-                "Waiting Time": process.waiting_time,
-                "Start Time": process.start_time
+                "Waiting Time": process.waiting_time
             })
 
             completed += 1
         else:
-            # Not finished? Back in the heap you go
             heappush(ready_queue, (process.remaining_time, process.arrival_time, process.pid))
 
-    return sorted(results, key=lambda x: x["Process ID"])
+    # Sort results by Process ID
+    sorted_results = sorted(results, key=lambda x: x["Process ID"])
+    
+    # Calculate averages
+    total_waiting = sum(p["Waiting Time"] for p in sorted_results)
+    total_turnaround = sum(p["Turnaround Time"] for p in sorted_results)
+    avg_waiting = round(total_waiting / n, 2)
+    avg_turnaround = round(total_turnaround / n, 2)
+    total_execution = round(max(p["Completion Time"] for p in sorted_results), 2)
+
+    return {
+        "processes": sorted_results,
+        "avg_waiting_time": avg_waiting,
+        "avg_turnaround_time": avg_turnaround,
+        "total_execution_time": total_execution
+    }
 
 def print_results(results):
     """Print the scheduling results in a formatted manner."""
-    if not results:
+    if not results["processes"]:
         print("No processes to schedule.")
         return
 
-    print("\n⏱️ SRTF Scheduling Results:")
+    print("\n SRTF Scheduling Results:")
     print("=" * 100)
     print(f"{'Process ID':<12} {'Arrival Time':<14} {'Burst Time':<12} {'Completion':<12} "
           f"{'Turnaround':<12} {'Waiting':<12}")
     print("-" * 100)
 
-    total_waiting = 0
-    total_turnaround = 0
-
-    for process in results:
+    for process in results["processes"]:
         print(f"{process['Process ID']:<12} {process['Arrival Time']:<14.2f} {process['Burst Time']:<12.2f} "
               f"{process['Completion Time']:<12.2f} {process['Turnaround Time']:<12.2f} "
               f"{process['Waiting Time']:<12.2f}")
 
-        total_waiting += process['Waiting Time']
-        total_turnaround += process['Turnaround Time']
-
-    n = len(results)
-    avg_waiting = total_waiting / n
-    avg_turnaround = total_turnaround / n
-
     print("=" * 100)
-    print(f"Average Waiting Time: {avg_waiting:.2f}")
-    print(f"Average Turnaround Time: {avg_turnaround:.2f}")
+    print(f"Average Waiting Time: {results['avg_waiting_time']:.2f}")
+    print(f"Average Turnaround Time: {results['avg_turnaround_time']:.2f}")
+    print(f"Total Execution Time: {results['total_execution_time']:.2f}")
+
+def save_results(results, file_path):
+    """Save the scheduling results to a file."""
+    try:
+        with open(file_path, 'w') as file:
+            # Write header
+            file.write("Process ID\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n")
+            
+            # Write process data
+            for process in results["processes"]:
+                file.write(f"{process['Process ID']}\t"
+                          f"{process['Arrival Time']:.2f}\t"
+                          f"{process['Burst Time']:.2f}\t"
+                          f"{process['Completion Time']:.2f}\t"
+                          f"{process['Turnaround Time']:.2f}\t"
+                          f"{process['Waiting Time']:.2f}\n")
+            
+            # Write averages
+            file.write("\n=== Averages ===\n")
+            file.write(f"Average Waiting Time: {results['avg_waiting_time']:.2f}\n")
+            file.write(f"Average Turnaround Time: {results['avg_turnaround_time']:.2f}\n")
+            file.write(f"Total Execution Time: {results['total_execution_time']:.2f}\n")
+    except Exception as e:
+        print(f"Error saving results: {e}")
 
 def main():
     # Adjust folder name here if needed
-    file_path = os.path.join(os.path.dirname(__file__), "..", "ProcessGeneratorModule", "processes.txt")
+    input_file_path = os.path.join(os.path.dirname(__file__), "..", "ProcessGeneratorModule", "processes.txt")
+    output_file_path = os.path.join(os.path.dirname(__file__), "..", "ProcessGeneratorModule", "srtf_results.txt")
 
     # Read processes
-    processes = read_processes(file_path)
+    processes = read_processes(input_file_path)
 
     # Run SRTF
     results = srtf_scheduling(processes)
 
-    # Show results
+    # Show results in console
     print_results(results)
+
+    # Save results to file
+    save_results(results, output_file_path)
 
 if __name__ == "__main__":
     main()

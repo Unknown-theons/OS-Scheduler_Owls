@@ -3,8 +3,8 @@ import numpy as np
 def read_Entire_File(Filename):
    # Open the file in read mode
    with open(Filename, "r") as file:
-      content = file.read()  # Reads the entire content of the file
-      print(content)  # Print the content to the console
+    content = file.read()  # Reads the entire content of the file
+    print(content)  # Print the content to the console
 
 def read_line_by_line(Filename):
    with open(Filename,"r") as file:
@@ -13,49 +13,71 @@ def read_line_by_line(Filename):
    return lines #retun a list of lines 
 
 def Extract_numbers(line_Order, usecase):
-   if usecase == 1: #first UseCase for Int Numbers
-    str_2_int = ""
-    for char in line_Order:
-       if char.isdigit():
-          str_2_int += char   
-    try:
-       str_2_int = int(str_2_int)
-    except ValueError:
-       print("there's a slicing error, code: SE_LN21")
-    return str_2_int
-   
-   if usecase == 2: #Second UseCase for Float and multiple numbers
-      str_2_float = [float(n) for n in re.findall(r'\d+\.\d+',line_Order)]
-      return str_2_float
+    if usecase == 1: #first UseCase for Int Numbers
+        str_2_int = ""
+        for char in line_Order:
+            if char.isdigit():
+                str_2_int += char   
+        try:
+            str_2_int = int(str_2_int)
+        except ValueError:
+            print("there's a slicing error, code: SE_LN21")
+            str_2_int = None
+        return str_2_int
+
+    if usecase == 2: #Second UseCase for Float and multiple numbers
+        str_2_float = [float(n) for n in re.findall(r'\d+\.\d+', line_Order)]
+        return str_2_float
    
 
 def Predict_and_Confirm_Values(ProcessesNumber, Mean, STDE):
    np.random.seed(42)  # Set a fixed seed to get the same result each time
 
-   # generate n-1 values that have mean and STDE work as lambda [it generates values around mean and STDE]
-   list_of_processes = np.random.normal(loc=Mean, scale=STDE, size=ProcessesNumber-1)  # mean = height, STDE = width, of the bell
+   # Feasibility check: max σ with all x>0 is μ*sqrt(N-1)
+   if STDE > Mean * np.sqrt(ProcessesNumber-1):
+      raise ValueError("Cannot have strict positivity with these mean/std parameters.")
 
-   # Ensure all values are non-negative
-   list_of_processes = np.maximum(list_of_processes, 0)  # Replace any negative values with 0
+   while True:
+      # generate n-1 values that have mean and STDE work as lambda [it generates values around mean and STDE]
+      list_of_processes = np.random.normal(loc=Mean, scale=STDE, size=ProcessesNumber-1)  # mean = height, STDE = width, of the bell
 
-   required_Sum = Mean * ProcessesNumber  # check REQUIRED sum
-   current_Sum = np.sum(list_of_processes)  # check CURRENT sum
+      # Ensure all values are non-negative
+      list_of_processes = np.maximum(list_of_processes, 0)  # Replace any negative values with 0
 
-   # Calculate the last value needed to match the required sum
-   last_Value = required_Sum - current_Sum
+      required_Sum = Mean * ProcessesNumber  # check REQUIRED sum
+      current_Sum = np.sum(list_of_processes)  # check CURRENT sum
 
-   # If last value is negative, adjust it to ensure a non-zero value
-   if last_Value < 0:
-      last_Value = 0  # Set it to zero only if its necessary to match the required sum
+      # Calculate the last value needed to match the required sum
+      last_Value = required_Sum - current_Sum
 
-   # Add the last value to the list
-   list_of_processes = np.append(list_of_processes, last_Value)
+      # If last value is negative, adjust it to ensure a non-zero value
+      if last_Value <= 0:
+         last_Value = 1e-6  # Set to a tiny positive value
 
-   current_std_dev = np.std(list_of_processes)  # calculate the STDE of the processes
-   scaling_factor = STDE / current_std_dev  # factor to make sure the STDE of processes match the REQUIRED STDE
+      # Add the last value to the list
+      list_of_processes = np.append(list_of_processes, last_Value)
 
-   # Adjust the values to match the desired standard deviation and mean
-   list_of_processes = (list_of_processes - np.mean(list_of_processes)) * scaling_factor + Mean  # adjust to match the REQUIRED STDE
+      # Now loop: enforce strict positivity, then re‑match mean & STDE by an affine transform
+      eps = 1e-6
+      for _ in range(20):
+         # clip to ensure no zeros or negatives
+         list_of_processes = np.maximum(list_of_processes, eps)
+
+         # compute current stats
+         cur_mean = np.mean(list_of_processes)
+         cur_std  = np.std(list_of_processes)
+
+         # linear rescale to match target mean & STDE
+         scaling_factor = STDE / cur_std
+         list_of_processes = (list_of_processes - cur_mean) * scaling_factor + Mean
+
+         # if now all > 0, we’re done
+         if np.all(list_of_processes > eps):
+            break
+
+      # If after the rescale+clip loop we have strict positivity, exit outer loop
+      if np.all(list_of_processes > eps):
+         break
 
    # Round the values and convert it from numpy float to regular float 
    list_of_processes = [round(float(i), 1) for i in list_of_processes]

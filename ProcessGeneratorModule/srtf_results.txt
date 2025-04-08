@@ -1,0 +1,10 @@
+Process ID	Arrival Time	Burst Time	Completion Time	Turnaround Time	Waiting Time
+P0	13.10	15.20	33.50	20.40	5.20
+P1	9.10	9.20	18.30	9.20	0.00
+P2	14.10	16.70	50.20	36.10	19.40
+P3	3.70	0.90	4.60	0.90	-0.00
+
+=== Averages ===
+Average Waiting Time: 6.15
+Average Turnaround Time: 16.65
+Total Execution Time: 50.20
