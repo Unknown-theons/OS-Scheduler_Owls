@@ -1,0 +1,93 @@
+body {
+    background-color: #f8f9fa;
+    padding-top: 2rem;
+}
+.card {
+    margin-bottom: 1.5rem;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: transform 0.5s ease, box-shadow 0.5s ease;
+    transform-origin: center top;
+}
+.card:hover {
+    transform: scale(1.02);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+}
+.card-header {
+    cursor: pointer;
+    transition: all 0.5s ease;
+    position: relative;
+    z-index: 2;
+}
+.card-header:hover {
+    transform: translateY(-2px);
+}
+.card-header h3 {
+    margin-bottom: 0;
+    font-size: 1.5rem;
+    transition: transform 0.3s ease;
+}
+.card:hover .card-header h3 {
+    transform: scale(1.05);
+}
+.table {
+    margin-bottom: 0;
+}
+.table th {
+    background-color: #343a40;
+    color: white;
+}
+.table-responsive {
+    height: 0;
+    overflow: hidden;
+    transition: height 0.5s ease;
+}
+.card:hover .table-responsive {
+    height: 300px;
+    overflow-y: auto;
+}
+.table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+}
+.card-body {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+    transform: translateY(-20px);
+    position: relative;
+    z-index: 1;
+}
+.card:hover .card-body {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.btn-group {
+    margin-bottom: 2rem;
+}
+#output1, #output2 {
+    margin-top: 1rem;
+}
+
+/* Specific card animations */
+.card.fcfs-card .card-header {
+    transition: background-color 0.5s ease;
+}
+.card.fcfs-card:hover .card-header {
+    background-color: #198754 !important; /* Darker green */
+}
+
+.card.srtf-card .card-header {
+    transition: background-color 0.5s ease;
+}
+.card.srtf-card:hover .card-header {
+    background-color: #e6b400 !important; /* Darker yellow */
+}
+
+.card.rr-card .card-header {
+    transition: background-color 0.5s ease;
+}
+.card.rr-card:hover .card-header {
+    background-color: #0077b6 !important; /* Darker blue */
+}

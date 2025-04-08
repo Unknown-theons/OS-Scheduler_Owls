@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round Robin Scheduling Algorithm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Same styles as fcfs.html */
+        body {
+            background-color: #121212;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #f5f5f5;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        .card {
+            background-color: #1a1a1a;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+        }
+        .btn-primary {
+            background: #f5f5f5;
+            color: #121212;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+        }
+        .back-button {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: transparent;
+            border: 2px solid #f5f5f5;
+            color: #f5f5f5;
+            padding: 0.5rem 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .back-button:hover {
+            background: #f5f5f5;
+            color: #121212;
+        }
+        .results-table {
+            background-color: #1a1a1a;
+            border-radius: 15px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        .table {
+            color: #f5f5f5;
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #2a2a2a;
+            border: none;
+            padding: 1rem;
+        }
+        .table td {
+            border-color: #2a2a2a;
+            padding: 1rem;
+        }
+        .averages {
+            background-color: #2a2a2a;
+            padding: 1rem;
+            border-radius: 0 0 15px 15px;
+            margin-top: 0;
+        }
+        .algorithm-info {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+    
+    <div class="header text-center">
+        <h1 class="display-4">Round Robin Scheduling</h1>
+        <p class="lead">Time-Sliced CPU Scheduling Algorithm</p>
+    </div>
+
+    <div class="container">
+        <div class="card">
+            <div class="algorithm-info">
+                <h3>About Round Robin</h3>
+                <p>Round Robin is a CPU scheduling algorithm that assigns a fixed time slice to each process in a circular queue. In this scheme:</p>
+                <ul>
+                    <li>Each process gets a fixed time quantum/slice</li>
+                    <li>After time quantum expires, the process is preempted and added to the end of the ready queue</li>
+                    <li>Fair allocation of CPU time to all processes</li>
+                    <li>Good for time-sharing systems and general-purpose computing</li>
+                </ul>
+            </div>
+            
+            <div class="text-center mb-4">
+                <button class="btn btn-primary" onclick="runRoundRobin()">
+                    <i class="fas fa-play"></i> Run Round Robin Algorithm
+                </button>
+            </div>
+
+            <div id="results" style="display: none;">
+                <h3 class="mb-3">Results</h3>
+                <div class="results-table">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Process ID</th>
+                                <th>Arrival Time</th>
+                                <th>Burst Time</th>
+                                <th>Completion Time</th>
+                                <th>Turnaround Time</th>
+                                <th>Waiting Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="resultsBody">
+                        </tbody>
+                    </table>
+                    <div class="averages" id="averages">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function runRoundRobin() {
+            fetch('/run_round_robin', {
+                method: 'POST'
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'error') {
+                    alert('Error: ' + data.message);
+                    return;
+                }
+                
+                // Show results section
+                document.getElementById('results').style.display = 'block';
+                
+                // Clear previous results
+                const resultsBody = document.getElementById('resultsBody');
+                resultsBody.innerHTML = '';
+                
+                // Add process rows
+                data.processes.forEach(process => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${process.id}</td>
+                        <td>${process.arrival_time.toFixed(2)}</td>
+                        <td>${process.burst_time.toFixed(2)}</td>
+                        <td>${process.completion_time.toFixed(2)}</td>
+                        <td>${process.turnaround_time.toFixed(2)}</td>
+                        <td>${process.waiting_time.toFixed(2)}</td>
+                    `;
+                    resultsBody.appendChild(row);
+                });
+                
+                // Update averages
+                const averages = document.getElementById('averages');
+                averages.innerHTML = `
+                    <strong>Average Waiting Time:</strong> ${data.average_waiting_time.toFixed(2)} |
+                    <strong>Average Turnaround Time:</strong> ${data.average_turnaround_time.toFixed(2)}
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error running Round Robin algorithm');
+            });
+        }
+    </script>
+</body>
+</html> 

@@ -69,26 +69,43 @@ if __name__ == "__main__":
     filename = os.path.join(os.path.dirname(__file__), "..", "..", "ProcessGeneratorModule", "processes.txt")
     try:
         processes = read_processes_from_file(filename)
-        print("Processes read from file:")
-        for p in processes:
-            print(p)
-        
         scheduled_processes = highest_priority_first(processes)
         
-        print("Scheduled Processes:")
-        total_waiting_time = 0
-        total_turnaround_time = 0
+        # Save results to file
+        results_path = os.path.join(os.path.dirname(__file__), "Priority_Results.txt")
+        with open(results_path, 'w') as file:
+            # Write header
+            file.write("Priority Scheduling Results:\n")
+            file.write("=" * 100 + "\n")
+            file.write(f"{'Process ID':<12} {'Arrival Time':<14} {'Burst Time':<12} {'Completion':<12} "
+                      f"{'Turnaround':<12} {'Waiting':<12}\n")
+            file.write("-" * 100 + "\n")
+            
+            # Write process data
+            for process in scheduled_processes:
+                file.write(f"{process['pid']:<12} {process['arrival']:<14.2f} {process['burst']:<12.2f} "
+                          f"{process['finish_time']:<12.2f} {process['turnaround_time']:<12.2f} "
+                          f"{process['waiting_time']:<12.2f}\n")
+            
+            # Calculate and write averages
+            total_waiting = sum(process['waiting_time'] for process in scheduled_processes)
+            total_turnaround = sum(process['turnaround_time'] for process in scheduled_processes)
+            n = len(scheduled_processes)
+            avg_waiting = total_waiting / n if n > 0 else 0
+            avg_turnaround = total_turnaround / n if n > 0 else 0
+            
+            file.write("=" * 100 + "\n")
+            file.write(f"Average Waiting Time: {avg_waiting:.2f}\n")
+            file.write(f"Average Turnaround Time: {avg_turnaround:.2f}\n")
+        
+        # Print results to console
+        print("\nScheduled Processes:")
         for p in scheduled_processes:
             print(f"Process {p['pid']} - Start: {round(p['start_time'], 2)}, Finish: {round(p['finish_time'], 2)}, "
                   f"Waiting: {round(p['waiting_time'], 2)}, Turnaround: {round(p['turnaround_time'], 2)}")
-            total_waiting_time += p['waiting_time']
-            total_turnaround_time += p['turnaround_time']
         
-        # حساب المتوسطات
-        avg_waiting_time = total_waiting_time / len(scheduled_processes)
-        avg_turnaround_time = total_turnaround_time / len(scheduled_processes)
+        print(f"\nAverage Waiting Time: {round(avg_waiting, 2)}")
+        print(f"Average Turnaround Time: {round(avg_turnaround, 2)}")
         
-        print(f"\nAverage Waiting Time: {round(avg_waiting_time, 2)}")
-        print(f"Average Turnaround Time: {round(avg_turnaround_time, 2)}")
     except Exception as e:
         print(f"Error: {e}")

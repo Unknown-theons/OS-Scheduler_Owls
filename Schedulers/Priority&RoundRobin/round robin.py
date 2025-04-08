@@ -100,16 +100,35 @@ if __name__ == '__main__':
     # Run the Round Robin scheduling simulation
     scheduled_processes = round_robin_scheduling(processes, quantum)
     
-    # Print the scheduling results
+    # Save results to file
+    results_path = os.path.join(os.path.dirname(__file__), "RoundRobin_Results.txt")
+    with open(results_path, 'w') as file:
+        # Write header
+        file.write("Round Robin Scheduling Results:\n")
+        file.write("=" * 100 + "\n")
+        file.write(f"{'Process ID':<12} {'Arrival Time':<14} {'Burst Time':<12} {'Completion':<12} "
+                  f"{'Turnaround':<12} {'Waiting':<12}\n")
+        file.write("-" * 100 + "\n")
+        
+        # Write process data
+        for process in scheduled_processes:
+            file.write(f"{process['id']:<12} {process['arrival']:<14.2f} {process['burst']:<12.2f} "
+                      f"{process['completion']:<12.2f} {process['turnaround']:<12.2f} "
+                      f"{process['waiting']:<12.2f}\n")
+        
+        # Calculate and write averages
+        total_waiting = sum(process['waiting'] for process in scheduled_processes)
+        total_turnaround = sum(process['turnaround'] for process in scheduled_processes)
+        n = len(scheduled_processes)
+        avg_waiting = total_waiting / n if n > 0 else 0
+        avg_turnaround = total_turnaround / n if n > 0 else 0
+        
+        file.write("=" * 100 + "\n")
+        file.write(f"Average Waiting Time: {avg_waiting:.2f}\n")
+        file.write(f"Average Turnaround Time: {avg_turnaround:.2f}\n")
+    
+    # Print results to console
     print_results(scheduled_processes)
     
-    # حساب متوسط وقت الانتظار ومتوسط وقت الدوران
-    total_waiting_time = sum(proc['waiting'] for proc in scheduled_processes)
-    total_turnaround_time = sum(proc['turnaround'] for proc in scheduled_processes)
-    n = len(scheduled_processes)
-    
-    avg_waiting_time = total_waiting_time / n
-    avg_turnaround_time = total_turnaround_time / n
-    
-    print("\nAverage Waiting Time:", round(avg_waiting_time, 2))
-    print("Average Turnaround Time:", round(avg_turnaround_time, 2))
+    print("\nAverage Waiting Time:", round(avg_waiting, 2))
+    print("Average Turnaround Time:", round(avg_turnaround, 2))

@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Scheduler</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #121212;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #f5f5f5;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            color: #f5f5f5;
+            padding: 3rem 0;
+            margin-bottom: 3rem;
+            border-radius: 0 0 30px 30px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3rem;
+        }
+        .logo {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 4px solid #f5f5f5;
+            box-shadow: 0 0 20px rgba(245, 245, 245, 0.3);
+        }
+        .team-name {
+            font-size: 1.4rem;
+            font-style: italic;
+            color: #f5f5f5;
+            text-shadow: 0 0 10px rgba(245, 245, 245, 0.3);
+            margin-top: 1rem;
+        }
+        .display-4 {
+            font-size: 3.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .lead {
+            font-size: 1.5rem;
+            opacity: 0.9;
+        }
+        .card {
+            background-color: #1a1a1a;
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            margin-bottom: 2rem;
+            color: #f5f5f5;
+            padding: 1.5rem;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 8px 16px rgba(245, 245, 245, 0.1);
+        }
+        .card-title {
+            color: #f5f5f5;
+            font-size: 1.8rem;
+            margin-bottom: 1.5rem;
+        }
+        .card-text {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .btn-primary {
+            background: #f5f5f5;
+            color: #121212;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(245, 245, 245, 0.2);
+        }
+        .btn-secondary {
+            background: #2a2a2a;
+            color: #f5f5f5;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        .btn-secondary:hover {
+            background: #333333;
+            transform: translateY(-2px);
+        }
+        .process-table {
+            background-color: #1a1a1a;
+            border-radius: 20px;
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        .table {
+            color: #f5f5f5;
+            font-size: 1.1rem;
+        }
+        .table th {
+            background-color: #2a2a2a;
+            border-top: none;
+            color: #f5f5f5;
+            font-size: 1.2rem;
+            padding: 1.2rem;
+        }
+        .table td {
+            border-color: #2a2a2a;
+            padding: 1.2rem;
+        }
+        .icon {
+            margin-right: 12px;
+            color: #f5f5f5;
+            font-size: 1.4rem;
+        }
+        .container {
+            max-width: 1400px;
+            padding: 0 2rem;
+        }
+        .row {
+            margin: 0 -1.5rem;
+        }
+        .col-md-6 {
+            padding: 0 1.5rem;
+        }
+        .d-grid {
+            gap: 1rem;
+        }
+        .btn-algorithm {
+            background: #2a2a2a;
+            color: #f5f5f5;
+            border: none;
+            padding: 0.8rem 1.5rem;
+            border-radius: 15px;
+            font-weight: 500;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            text-align: left;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        .btn-algorithm:hover {
+            background: #333333;
+            transform: translateY(-2px);
+        }
+        .algorithms-list {
+            display: none;
+            margin-top: 1rem;
+        }
+        .algorithms-list.show {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="header text-center">
+        <div class="container">
+            <div class="header-content">
+                <img src="/static/logo.jpeg" alt="Team Logo" class="logo">
+                <div>
+                    <h1 class="display-4">Process Scheduler</h1>
+                    <p class="lead">Generate and visualize process scheduling algorithms</p>
+                    <p class="team-name">Made by Unknown Theons' team</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="row">
+            <!-- Process Generation Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-cogs icon"></i>Process Generation
+                        </h5>
+                        <p class="card-text">Generate new processes and view their details.</p>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" onclick="generateProcesses()">
+                                <i class="fas fa-plus-circle icon"></i>Generate New Processes
+                            </button>
+                            <button class="btn btn-secondary" onclick="showProcesses()">
+                                <i class="fas fa-list icon"></i>Show Processes Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Scheduling Algorithms Section -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <i class="fas fa-chart-line icon"></i>Scheduling Algorithms
+                        </h5>
+                        <p class="card-text">Run different scheduling algorithms on the generated processes.</p>
+                        <div class="d-grid">
+                            <button class="btn btn-primary" onclick="toggleAlgorithms()">
+                                <i class="fas fa-play icon"></i>Run Scheduling Algorithms
+                            </button>
+                            <div id="algorithmsList" class="algorithms-list">
+                                <a href="/fcfs" class="btn btn-algorithm">
+                                    <i class="fas fa-arrow-right icon"></i>First Come First Serve (FCFS)
+                                </a>
+                                <a href="/srtf" class="btn btn-algorithm">
+                                    <i class="fas fa-clock icon"></i>Shortest Remaining Time First (SRTF)
+                                </a>
+                                <a href="/roundrobin" class="btn btn-algorithm">
+                                    <i class="fas fa-sync icon"></i>Round Robin
+                                </a>
+                                <a href="/priority" class="btn btn-algorithm">
+                                    <i class="fas fa-sort-amount-down icon"></i>Priority Scheduling
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Generated Processes Section -->
+        <div id="generatedProcesses" class="mt-4" style="display: none;">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-table icon"></i>Generated Processes
+                    </h5>
+                    <div class="table-responsive process-table">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Process ID</th>
+                                    <th>Arrival Time</th>
+                                    <th>Burst Time</th>
+                                    <th>Priority</th>
+                                </tr>
+                            </thead>
+                            <tbody id="processesTableBody">
+                                <!-- Process data will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function generateProcesses() {
+            fetch('/generate', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        showProcesses();
+                    } else {
+                        alert('Error generating processes: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error generating processes');
+                });
+        }
+
+        function showProcesses() {
+            fetch('/get_processes_data')
+                .then(response => response.text())
+                .then(data => {
+                    const processesDiv = document.getElementById('generatedProcesses');
+                    const tableBody = document.getElementById('processesTableBody');
+                    
+                    // Clear existing table data
+                    tableBody.innerHTML = '';
+                    
+                    // Parse the data and create table rows
+                    const lines = data.split('\n');
+                    for (let i = 1; i < lines.length; i++) { // Skip header line
+                        const line = lines[i].trim();
+                        if (line) {
+                            const [pid, arrival, burst, priority] = line.split(/\s+/);
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${pid}</td>
+                                <td>${parseFloat(arrival).toFixed(2)}</td>
+                                <td>${parseFloat(burst).toFixed(2)}</td>
+                                <td>${priority}</td>
+                            `;
+                            tableBody.appendChild(row);
+                        }
+                    }
+                    
+                    // Show the processes section
+                    processesDiv.style.display = 'block';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Error fetching processes data');
+                });
+        }
+
+        function toggleAlgorithms() {
+            const algorithmsList = document.getElementById('algorithmsList');
+            algorithmsList.classList.toggle('show');
+        }
+    </script>
+</body>
+</html>
