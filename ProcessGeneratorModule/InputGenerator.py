@@ -1,13 +1,16 @@
+#each process has burst time, pirority, arrival time, process id 
+#mean and standard devi for burst time and arrival time
 import random
 import os
 import numpy as np
 import math
 
-# Define the file name globally
-inputFile = "inputFile.txt"
+# Define the file paths relative to this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+input_file = os.path.join(script_dir, "inputFile.txt")
 
 # Check if the file exists
-if os.path.exists(inputFile):
+if os.path.exists(input_file):
     print("File exists, ERROR CODE: FE101_Betch_L7")
 else:
     print("File does not exist, creating a new file.")
@@ -53,16 +56,15 @@ def generateDataPoints():
     return ProccessesDictinory
         
 def generateFileInput(ProccessesDictinory):
-        #lambda_value = float(input("What do you want the priorities to be centered around? ")) ##enter value of lambda priority
         lambda_value = random.uniform(4,10)
         lambda_value = round(lambda_value, 1)
 
-        mean_STRD_4_Arrivaltime = calc_Mean_STDR(ProccessesDictinory,"Arrival Time") #Calc Mean and standard deviation for arrival time
-        mean_STRD_4_BurstTime = calc_Mean_STDR(ProccessesDictinory,"Burst Time")#Calc Mean and standard deviation for Burst time
+        mean_STRD_4_Arrivaltime = calc_Mean_STDR(ProccessesDictinory,"Arrival Time")
+        mean_STRD_4_BurstTime = calc_Mean_STDR(ProccessesDictinory,"Burst Time")
 
-        numOf_Processes = len(ProccessesDictinory)#check how many proccesses are there
+        numOf_Processes = len(ProccessesDictinory)
 
-        with open(inputFile, "w") as file:
+        with open(input_file, "w") as file:
             file.write(f"\nProccesses Number: {numOf_Processes}\n")
             file.write(f"Mean and Standard Deviation for Arrival Time: {mean_STRD_4_Arrivaltime}\n")
             file.write(f"Mean and Standard Deviation for Burst Time: {mean_STRD_4_BurstTime}\n")
@@ -70,10 +72,11 @@ def generateFileInput(ProccessesDictinory):
 
 def readFile():
     # Open the file in read mode
-    with open("inputFile.txt", "r") as file:
-        content = file.read()  # Reads the entire content of the file
-        print(content)  # Print the content to the console
+    with open(input_file, "r") as file:
+        content = file.read()
+        print(content)
 
-dic = generateDataPoints()
-generateFileInput(dic)
-readFile()
+if __name__ == "__main__":
+    dic = generateDataPoints()
+    generateFileInput(dic)
+    readFile()

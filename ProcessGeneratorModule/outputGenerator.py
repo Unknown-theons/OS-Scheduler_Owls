@@ -1,5 +1,12 @@
 import re
 import numpy as np
+import os
+
+# Define file paths relative to this script
+script_dir = os.path.dirname(os.path.abspath(__file__))
+input_file = os.path.join(script_dir, "inputFile.txt")
+processes_file = os.path.join(script_dir, "processes.txt")
+
 def read_Entire_File(Filename):
    # Open the file in read mode
    with open(Filename, "r") as file:
@@ -71,7 +78,7 @@ def Predict_and_Confirm_Values(ProcessesNumber, Mean, STDE):
          scaling_factor = STDE / cur_std
          list_of_processes = (list_of_processes - cur_mean) * scaling_factor + Mean
 
-         # if now all > 0, we’re done
+         # if now all > 0, we're done
          if np.all(list_of_processes > eps):
             break
 
@@ -114,29 +121,25 @@ def Write_DIC_to_Text_File(ProcessDic, filename):
             # Write the data in a formatted way (align columns)
             file.write(f"{process_id:<15}{arrival_time:<15}{burst_time:<15}{priority:<15}\n")
 
-inputFile = "inputFile.txt"
-processesFile = "processes.txt"
-lines_list = read_line_by_line(inputFile)
+if __name__ == "__main__":
+    lines_list = read_line_by_line(input_file)
 
-ProcessNumbers = Extract_numbers(lines_list[1],1) # Output: Int
-print(f"Number of Processes: {ProcessNumbers}\n")
+    ProcessNumbers = Extract_numbers(lines_list[1],1) # Output: Int
+    print(f"Number of Processes: {ProcessNumbers}\n")
 
-ArrivalTime = Extract_numbers(lines_list[2],2) # Output: [Mean, STDR]
-ArrivalTime_List = Predict_and_Confirm_Values(ProcessNumbers, ArrivalTime[0], ArrivalTime[1])
+    ArrivalTime = Extract_numbers(lines_list[2],2) # Output: [Mean, STDR]
+    ArrivalTime_List = Predict_and_Confirm_Values(ProcessNumbers, ArrivalTime[0], ArrivalTime[1])
 
+    BurstTime = Extract_numbers(lines_list[3],2) # Output: [Mean, STDR]
+    BurstTime_List = Predict_and_Confirm_Values(ProcessNumbers, BurstTime[0], BurstTime[1])
 
-BurstTime = Extract_numbers(lines_list[3],2) # Output: [Mean, STDR]
-BurstTime_List = Predict_and_Confirm_Values(ProcessNumbers, BurstTime[0], BurstTime[1])
+    Priority = Extract_numbers(lines_list[4],2) # Output: [Float]
+    priority2_List = np.random.poisson(Priority, ProcessNumbers) #generate random priorities around the given num
 
+    # Convert np.int32 to int
+    priority2_list = [int(x) for x in priority2_List]
 
-Priority = Extract_numbers(lines_list[4],2) # Output: [Float]
-priority2_List = np.random.poisson(Priority, ProcessNumbers) #generate random priorities around the given num
+    Merged = Merge_lists_to_DIC(ProcessNumbers, ArrivalTime_List, BurstTime_List, priority2_list)
 
-# Convert np.int32 to int
-priority2_list = [int(x) for x in priority2_List]
-
-
-Merged = Merge_lists_to_DIC(ProcessNumbers, ArrivalTime_List, BurstTime_List, priority2_list)
-
-Write_DIC_to_Text_File(Merged, processesFile)
-read_Entire_File(processesFile)
+    Write_DIC_to_Text_File(Merged, processes_file)
+    read_Entire_File(processes_file)

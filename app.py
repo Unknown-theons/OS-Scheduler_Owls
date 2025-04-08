@@ -1,118 +1,243 @@
-from flask import Flask, render_template, send_file, jsonify
-from Schedulers.FCFS import read_processes, fcfs_scheduling
-from Schedulers.SRTF import read_processes as srtf_read_processes, srtf_scheduling
+from flask import Flask, render_template, send_file, jsonify, send_from_directory
+from Schedulers.FCFS_SRTF.FCFS import read_processes, fcfs_scheduling
+from Schedulers.FCFS_SRTF.SRTF import read_processes as srtf_read_processes, srtf_scheduling
 import os
 import subprocess
+import logging
 
-app = Flask(__name__)
+# Configure logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
-def read_round_robin_input():
-    """Read the Round Robin input data from file"""
-    input_data = []
-    try:
-        with open("processes.txt", "r") as file:
-            lines = file.readlines()[1:]  # Skip header
-            for line in lines:
-                if line.strip():
-                    parts = line.split()
-                    input_data.append({
-                        'Process ID': parts[0],
-                        'Arrival Time': float(parts[1]),
-                        'Burst Time': float(parts[2]),
-                        'Priority': int(parts[3])
-                    })
-    except FileNotFoundError:
-        pass
-    return input_data
+app = Flask(__name__, static_folder='static')
 
-def read_round_robin_results():
-    """Read Round Robin results directly from the text file"""
-    results = {
-        'header': '',
-        'processes': [],
-        'avg_waiting': 0,
-        'avg_turnaround': 0
-    }
-    
-    try:
-        with open("ProcessGeneratorModule/round_robin_results.txt", "r") as file:
-            lines = file.readlines()
-            if len(lines) >= 2:
-                results['header'] = lines[0].strip()  # Save the header
-                
-                # Read process data
-                for line in lines[2:]:  # Skip header and separator
-                    line = line.strip()
-                    if not line:
-                        continue
-                    if line.startswith("Average"):
-                        # Extract average values
-                        if "Waiting Time:" in line:
-                            results['avg_waiting'] = float(line.split(":")[1].strip())
-                        elif "Turnaround Time:" in line:
-                            results['avg_turnaround'] = float(line.split(":")[1].strip())
-                    else:
-                        # Process data line
-                        parts = line.split()
-                        if len(parts) >= 7:
-                            process = {
-                                'Process ID': parts[0],
-                                'Arrival Time': float(parts[1]),
-                                'Burst Time': float(parts[2]),
-                                'Priority': int(parts[3]),
-                                'Completion Time': float(parts[4]),
-                                'Waiting Time': float(parts[5]),
-                                'Turnaround Time': float(parts[6])
-                            }
-                            results['processes'].append(process)
-    except FileNotFoundError:
-        pass
-    
-    return results
+def get_absolute_path(relative_path):
+    """Convert relative path to absolute path based on app root"""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), relative_path)
 
 @app.route('/')
 def index():
-    # Path to the processes.txt file
-    file_path = "E:/MY PROJECT/Web devolopment/OS-Scheduler_Owls/processes.txt"
-    srtf_results_path = "E:/MY PROJECT/Web devolopment/OS-Scheduler_Owls/ProcessGeneratorModule/srtf_results.txt"
-    
-    # Read processes and get FCFS scheduling results
-    processes = read_processes(file_path)
-    fcfs_results = fcfs_scheduling(processes)
-    
-    # Calculate FCFS averages
-    if fcfs_results:
-        total_waiting = sum(process['Waiting Time'] for process in fcfs_results)
-        total_turnaround = sum(process['Turnaround Time'] for process in fcfs_results)
-        n = len(fcfs_results)
-        fcfs_avg_waiting = total_waiting / n
-        fcfs_avg_turnaround = total_turnaround / n
-    else:
-        fcfs_avg_waiting = fcfs_avg_turnaround = 0
-    
-    # Read SRTF results from file
-    srtf_processes = []
-    srtf_avg_waiting = 0
-    srtf_avg_turnaround = 0
-    srtf_total_execution = 0
-    
+    return render_template('index.html')
+
+@app.route('/algorithms')
+def algorithms():
+    return render_template('algorithms.html')
+
+@app.route('/get_processes_data')
+def get_processes_data():
     try:
-        with open(srtf_results_path, 'r') as file:
-            lines = file.readlines()
-            # Skip header
-            current_section = "processes"
-            for line in lines[1:]:
-                line = line.strip()
-                if not line:
-                    continue
-                if line.startswith("=== Averages ==="):
-                    current_section = "averages"
-                    continue
+        # Look for processes.txt in the ProcessGeneratorModule folder
+        file_path = get_absolute_path("ProcessGeneratorModule/processes.txt")
+        logger.debug(f"Attempting to read processes file from: {file_path}")
+        
+        if not os.path.exists(file_path):
+            logger.error(f"Processes file not found at: {file_path}")
+            return "No processes data available", 404
+            
+        # Read the file content
+        with open(file_path, 'r') as file:
+            content = file.read()
+            
+        if not content.strip():
+            logger.error("Processes file is empty")
+            return "No processes data available", 404
+            
+        logger.debug(f"Successfully read processes file. Content length: {len(content)}")
+        return content
+    except Exception as e:
+        logger.error(f"Error in get_processes_data: {str(e)}")
+        return str(e), 500
+
+@app.route('/generate', methods=['POST'])
+def generate():
+    try:
+        logger.debug("Starting process generation")
+        
+        # Get absolute paths
+        input_generator = get_absolute_path("ProcessGeneratorModule/InputGenerator.py")
+        output_generator = get_absolute_path("ProcessGeneratorModule/outputGenerator.py")
+        
+        # First run InputGenerator.py to create inputFile.txt
+        logger.debug(f"Running input generator: {input_generator}")
+        subprocess.run(['python', input_generator], check=True, cwd=os.path.dirname(input_generator))
+        
+        # Then run outputGenerator.py to create processes.txt
+        logger.debug(f"Running output generator: {output_generator}")
+        subprocess.run(['python', output_generator], check=True, cwd=os.path.dirname(output_generator))
+        
+        # Verify that processes.txt was created
+        processes_path = get_absolute_path("ProcessGeneratorModule/processes.txt")
+        if not os.path.exists(processes_path):
+            raise Exception("Processes file was not created after generation")
+            
+        logger.debug("Process generation completed successfully")
+        return jsonify({"status": "success"})
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Subprocess error: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+    except Exception as e:
+        logger.error(f"Error in generate: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+def run_all_algorithms():
+    """Run all scheduling algorithms and store their results"""
+    try:
+        # Get the processes file path
+        processes_path = get_absolute_path("ProcessGeneratorModule/processes.txt")
+        
+        # Run FCFS
+        processes = read_processes(processes_path)
+        fcfs_results = fcfs_scheduling(processes)
+        save_results("Schedulers/FCFS_SRTF/FCFS_Results.txt", fcfs_results)
+        
+        # Run SRTF
+        processes = srtf_read_processes(processes_path)
+        srtf_results = srtf_scheduling(processes)
+        save_results("Schedulers/FCFS_SRTF/SRTF_Results.txt", srtf_results)
+        
+        # Run Round Robin
+        processes_src = processes_path
+        processes_dest = get_absolute_path("Schedulers/Priority&RoundRobin/processes.txt")
+        with open(processes_src, 'r') as src, open(processes_dest, 'w') as dest:
+            dest.write(src.read())
+        
+        round_robin_path = get_absolute_path("Schedulers/Priority&RoundRobin/round robin.py")
+        subprocess.run(['python', round_robin_path], check=True, cwd=os.path.dirname(round_robin_path))
+        
+        # Run Priority
+        priority_path = get_absolute_path("Schedulers/Priority&RoundRobin/periority.py")
+        subprocess.run(['python', priority_path], check=True, cwd=os.path.dirname(priority_path))
+        
+    except Exception as e:
+        logger.error(f"Error running algorithms: {str(e)}")
+        raise
+
+def save_results(filename, results):
+    """Save algorithm results to a file"""
+    try:
+        # Get the absolute path for the results file
+        file_path = get_absolute_path(filename)
+        logger.debug(f"Saving results to: {file_path}")
+        
+        # Create directory if it doesn't exist
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        
+        with open(file_path, 'w') as file:
+            # Write header
+            file.write("🔄 FCFS Scheduling Results:\n")
+            file.write("=" * 100 + "\n")
+            file.write(f"{'Process ID':<12} {'Arrival Time':<14} {'Burst Time':<12} {'Completion':<12} "
+                      f"{'Turnaround':<12} {'Waiting':<12}\n")
+            file.write("-" * 100 + "\n")
+            
+            # Write process data
+            for process in results['processes']:
+                file.write(f"{process['Process ID']:<12} {process['Arrival Time']:<14.2f} {process['Burst Time']:<12.2f} "
+                          f"{process['Completion Time']:<12.2f} {process['Turnaround Time']:<12.2f} "
+                          f"{process['Waiting Time']:<12.2f}\n")
+            
+            # Write footer with averages
+            file.write("=" * 100 + "\n")
+            file.write(f"Average Waiting Time: {results['avg_waiting']:.2f}\n")
+            file.write(f"Average Turnaround Time: {results['avg_turnaround']:.2f}\n")
                 
-                if current_section == "processes":
-                    parts = line.split('\t')
-                    if len(parts) == 6:
-                        srtf_processes.append({
+        logger.debug(f"Successfully saved results to {file_path}")
+    except Exception as e:
+        logger.error(f"Error saving results to {filename}: {str(e)}")
+        raise
+
+@app.route('/run_fcfs', methods=['POST'])
+def run_fcfs():
+    try:
+        # Run FCFS algorithm
+        fcfs_path = get_absolute_path("Schedulers/FCFS_SRTF/FCFS.py")
+        subprocess.run(['python', fcfs_path], check=True, cwd=os.path.dirname(fcfs_path))
+        
+        # Read results from file
+        results_path = get_absolute_path("Schedulers/FCFS_SRTF/FCFS_Results.txt")
+        return read_and_format_results(results_path)
+    except Exception as e:
+        logger.error(f"Error in run_fcfs: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/run_srtf', methods=['POST'])
+def run_srtf():
+    try:
+        # Run SRTF algorithm
+        srtf_path = get_absolute_path("Schedulers/FCFS_SRTF/SRTF.py")
+        subprocess.run(['python', srtf_path], check=True, cwd=os.path.dirname(srtf_path))
+        
+        # Read results from file
+        results_path = get_absolute_path("Schedulers/FCFS_SRTF/SRTF_Results.txt")
+        return read_and_format_results(results_path)
+    except Exception as e:
+        logger.error(f"Error in run_srtf: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/run_round_robin', methods=['POST'])
+def run_round_robin():
+    try:
+        # Run Round Robin algorithm
+        round_robin_path = get_absolute_path("Schedulers/Priority&RoundRobin/round robin.py")
+        subprocess.run(['python', round_robin_path], check=True, cwd=os.path.dirname(round_robin_path))
+        
+        # Read results from file
+        results_path = get_absolute_path("Schedulers/Priority&RoundRobin/RoundRobin_Results.txt")
+        return read_and_format_results(results_path)
+    except Exception as e:
+        logger.error(f"Error in run_round_robin: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+@app.route('/run_priority', methods=['POST'])
+def run_priority():
+    try:
+        # Run Priority algorithm
+        priority_path = get_absolute_path("Schedulers/Priority&RoundRobin/periority.py")
+        subprocess.run(['python', priority_path], check=True, cwd=os.path.dirname(priority_path))
+        
+        # Read results from file
+        results_path = get_absolute_path("Schedulers/Priority&RoundRobin/Priority_Results.txt")
+        return read_and_format_results(results_path)
+    except Exception as e:
+        logger.error(f"Error in run_priority: {str(e)}")
+        return jsonify({"status": "error", "message": str(e)}), 500
+
+def read_and_format_results(file_path):
+    """Read and format results from a file"""
+    try:
+        if not os.path.exists(file_path):
+            raise Exception(f"Results file not found: {file_path}")
+            
+        with open(file_path, 'r') as file:
+            lines = file.readlines()
+            
+        results = {
+            'processes': [],
+            'avg_waiting': 0,
+            'avg_turnaround': 0
+        }
+        
+        # Skip header lines until we reach the process data
+        start_processing = False
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            if line.startswith("Process ID"):
+                start_processing = True
+                continue
+                
+            if line.startswith("=") and "=" * 100 in line:
+                start_processing = False
+                continue
+                
+            if start_processing and not line.startswith("-"):
+                # Parse process data
+                parts = line.split()
+                if len(parts) >= 6:
+                    try:
+                        results['processes'].append({
                             'Process ID': parts[0],
                             'Arrival Time': float(parts[1]),
                             'Burst Time': float(parts[2]),
@@ -120,79 +245,46 @@ def index():
                             'Turnaround Time': float(parts[4]),
                             'Waiting Time': float(parts[5])
                         })
-                elif current_section == "averages":
-                    if "Average Waiting Time:" in line:
-                        srtf_avg_waiting = float(line.split(': ')[1])
-                    elif "Average Turnaround Time:" in line:
-                        srtf_avg_turnaround = float(line.split(': ')[1])
-                    elif "Total Execution Time:" in line:
-                        srtf_total_execution = float(line.split(': ')[1])
-    except FileNotFoundError:
-        pass
-    
-    # Read Round Robin results
-    rr_results = read_round_robin_results()
-    
-    return render_template('index.html', 
-                         fcfs_processes=fcfs_results,
-                         fcfs_avg_waiting=fcfs_avg_waiting,
-                         fcfs_avg_turnaround=fcfs_avg_turnaround,
-                         srtf_processes=srtf_processes,
-                         srtf_avg_waiting=srtf_avg_waiting,
-                         srtf_avg_turnaround=srtf_avg_turnaround,
-                         srtf_total_execution=srtf_total_execution,
-                         rr_results=rr_results)
-
-@app.route('/get_processes_data')
-def get_processes_data():
-    file_path = "E:/MY PROJECT/Web devolopment/OS-Scheduler_Owls/processes.txt"
-    return send_file(file_path)
-
-@app.route('/get_input_data')
-def get_input_data():
-    file_path = "E:/MY PROJECT/Web devolopment/OS-Scheduler_Owls/inputFile.txt"
-    return send_file(file_path)
-
-@app.route('/generate', methods=['POST'])
-def generate():
-    try:
-        # Generate new processes
-        subprocess.run(['python', 'ProcessGeneratorModule/InputGenerator.py'], check=True)
-        subprocess.run(['python', 'ProcessGeneratorModule/outputGenerator.py'], check=True)
-        
-        # Run SRTF scheduling
-        srtf_processes = srtf_read_processes("processes.txt")
-        srtf_results = srtf_scheduling(srtf_processes)
-        
-        # Save SRTF results to file
-        output_path = "ProcessGeneratorModule/srtf_results.txt"
-        with open(output_path, 'w') as file:
-            # Write header
-            file.write("Process ID\tArrival Time\tBurst Time\tCompletion Time\tTurnaround Time\tWaiting Time\n")
+                    except (IndexError, ValueError) as e:
+                        logger.error(f"Error parsing process data from line: {line}, error: {str(e)}")
             
-            # Write process data
-            for process in srtf_results["processes"]:
-                file.write(f"{process['Process ID']}\t"
-                          f"{process['Arrival Time']:.2f}\t"
-                          f"{process['Burst Time']:.2f}\t"
-                          f"{process['Completion Time']:.2f}\t"
-                          f"{process['Turnaround Time']:.2f}\t"
-                          f"{process['Waiting Time']:.2f}\n")
-            
-            # Write averages
-            file.write("\n=== Averages ===\n")
-            file.write(f"Average Waiting Time: {srtf_results['avg_waiting_time']:.2f}\n")
-            file.write(f"Average Turnaround Time: {srtf_results['avg_turnaround_time']:.2f}\n")
-            file.write(f"Total Execution Time: {srtf_results['total_execution_time']:.2f}\n")
+            # Parse averages
+            if line.startswith("Average Waiting Time:"):
+                try:
+                    results['avg_waiting'] = float(line.split(":")[1].strip())
+                except (IndexError, ValueError):
+                    logger.error(f"Error parsing waiting time from line: {line}")
+            elif line.startswith("Average Turnaround Time:"):
+                try:
+                    results['avg_turnaround'] = float(line.split(":")[1].strip())
+                except (IndexError, ValueError):
+                    logger.error(f"Error parsing turnaround time from line: {line}")
         
-        # Run Round Robin algorithm
-        subprocess.run(['python', 'Round robin/round robin.py'], check=True)
-        
-        return jsonify({"status": "success"})
-    except subprocess.CalledProcessError as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.debug(f"Read results from {file_path}: {results}")
+        return jsonify(results)
     except Exception as e:
-        return jsonify({"status": "error", "message": str(e)}), 500
+        logger.error(f"Error reading results from {file_path}: {str(e)}")
+        raise
+
+@app.route('/fcfs')
+def fcfs_page():
+    return render_template('fcfs.html')
+
+@app.route('/srtf')
+def srtf_page():
+    return render_template('srtf.html')
+
+@app.route('/roundrobin')
+def roundrobin_page():
+    return render_template('roundrobin.html')
+
+@app.route('/priority')
+def priority_page():
+    return render_template('priority.html')
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    try:
+        app.run(debug=True, use_reloader=False)
+    except Exception as e:
+        logger.error(f"Error starting Flask application: {str(e)}")
+        raise
