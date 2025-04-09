@@ -1,0 +1,5 @@
+
+Proccesses Number: 4
+Mean and Standard Deviation for Arrival Time: [(8.2, 5.5)]
+Mean and Standard Deviation for Burst Time: [(13.8, 6.8)]
+Lambda Priority: 9.7

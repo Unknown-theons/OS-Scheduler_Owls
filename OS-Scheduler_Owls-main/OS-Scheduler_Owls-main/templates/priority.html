@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Priority Scheduling Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <div class="container mt-5">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- Back Button -->
+                <div class="mb-4">
+                    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+                        <i class="bi bi-arrow-left"></i> Back to Home
+                    </a>
+                </div>
+
+                <!-- Results Card -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-info text-white">
+                        <h4 class="mb-0"><i class="bi bi-list-ol"></i> Priority Scheduling Results</h4>
+                    </div>
+                    <div class="card-body">
+                        {% if priority_output %}
+                            <div class="card mb-4">
+                                <div class="card-header bg-info text-white">
+                                    <h5 class="mb-0">Priority Scheduling Results</h5>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover table-bordered mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Process ID</th>
+                                                <th>Arrival Time</th>
+                                                <th>Burst Time</th>
+                                                <th>Priority</th>
+                                                <th>Completion</th>
+                                                <th>Turnaround</th>
+                                                <th>Waiting</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for line in priority_output.split('\n') %}
+                                                {% if line.startswith('P') %}
+                                                    {% set data = line.split() %}
+                                                    <tr>
+                                                        <td><span class="badge bg-warning">{{ data[0] }}</span></td>
+                                                        <td>{{ data[1] }}</td>
+                                                        <td>{{ data[2] }}</td>
+                                                        <td>{{ data[3] }}</td>
+                                                        <td>{{ data[4] }}</td>
+                                                        <td>{{ data[5] }}</td>
+                                                        <td>{{ data[6] }}</td>
+                                                    </tr>
+                                                {% endif %}
+                                                {% if 'Average Waiting Time:' in line %}
+                                                    {% set avg_wait = line.split(':')[1] | trim %}
+                                                {% endif %}
+                                                {% if 'Average Turnaround Time:' in line %}
+                                                    {% set avg_turn = line.split(':')[1] | trim %}
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            {% for line in priority_output.split('\n') %}
+                                {% if 'Average Waiting Time:' in line or 'Average Turnaround Time:' in line %}
+                                    <div class="mt-2">
+                                        <pre class="bg-dark text-light p-2 mb-0">{{ line }}</pre>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <div class="alert alert-warning">
+                                No results available. Please generate processes first.
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
