@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Process Scheduler</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 2rem;
+        }
+        
+        .comparison-image {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .comparison-image.show {
+            max-height: 1000px;
+            transition: max-height 0.5s ease-in;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-10">
+                <!-- Generate Button and Algorithm Selection Card -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-body">
+                        <div class="row align-items-center mb-4">
+                            <div class="col-12 text-center">
+                                <form action="/generate" method="post">
+                                    <button type="submit" class="btn btn-primary btn-lg w-50">
+                                        <i class="bi bi-arrow-repeat"></i> Generate New Processes
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        <div class="row align-items-center">
+                            <div class="col-md-3 text-center mb-3">
+                                <a href="{{ url_for('fcfs') }}" class="btn btn-success btn-lg w-100">
+                                    <i class="bi bi-clock-history"></i> FCFS
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <a href="{{ url_for('srtf') }}" class="btn btn-warning btn-lg w-100">
+                                    <i class="bi bi-lightning-charge"></i> SRTF
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <a href="{{ url_for('priority') }}" class="btn btn-info btn-lg w-100 text-white">
+                                    <i class="bi bi-list-ol"></i> Priority
+                                </a>
+                            </div>
+                            <div class="col-md-3 text-center mb-3">
+                                <a href="{{ url_for('round_robin') }}" class="btn btn-lg w-100 text-white" style="background-color: #6f42c1;">
+                                    <i class="bi bi-clock"></i> Round Robin
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scheduling Comparison Card -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white hover-effect">
+                        <h5 class="card-title mb-0">Scheduling Algorithms Comparison</h5>
+                    </div>
+                    <div class="card-body text-center comparison-image" id="comparisonImage">
+                        {% if error %}
+                            <div class="alert alert-danger">
+                                <strong>Error:</strong> {{ error }}
+                            </div>
+                        {% elif has_comparison %}
+                            <img src="{{ url_for('static', filename='scheduling_comparison.png') }}?t={{ timestamp }}" 
+                                 class="img-fluid" 
+                                 alt="Scheduling Algorithms Comparison"
+                                 style="max-width: 100%; height: auto;">
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p>No comparison chart available yet.</p>
+                                <p>Click the "Generate New Processes" button to create a comparison.</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <script>
+                        const header = document.querySelector('.hover-effect');
+                        const image = document.getElementById('comparisonImage');
+                        
+                        // Show the image by default
+                        image.classList.add('show');
+                        
+                        header.addEventListener('mouseenter', () => {
+                            image.classList.add('show');
+                        });
+                        
+                        header.addEventListener('mouseleave', () => {
+                            image.classList.add('show');
+                        });
+                    </script>
+                </div>
+
+                <!-- Input Parameters Card -->
+                <div class="card mb-4 shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Input Parameters</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Number of Processes:</strong> 
+                                    <span class="badge bg-secondary">
+                                        {% if input_params and input_params.processes_number %}
+                                            {{ input_params.processes_number }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </p>
+                                <p class="mb-2"><strong>Arrival Time Stats:</strong> 
+                                    <span class="badge bg-info">
+                                        {% if input_params and input_params.arrival_time_stats %}
+                                            {{ input_params.arrival_time_stats }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-2"><strong>Burst Time Stats:</strong> 
+                                    <span class="badge bg-info">
+                                        {% if input_params and input_params.burst_time_stats %}
+                                            {{ input_params.burst_time_stats }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </p>
+                                <p class="mb-2"><strong>Lambda Priority:</strong> 
+                                    <span class="badge bg-secondary">
+                                        {% if input_params and input_params.lambda_priority %}
+                                            {{ input_params.lambda_priority }}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Process Table Card -->
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">Process Data</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Process ID</th>
+                                        <th>Arrival Time</th>
+                                        <th>Burst Time</th>
+                                        <th>Priority</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for process in processes %}
+                                    <tr>
+                                        <td><span class="badge bg-primary">{{ process.process_id }}</span></td>
+                                        <td>{{ process.arrival_time }}</td>
+                                        <td>{{ process.burst_time }}</td>
+                                        <td><span class="badge bg-secondary">{{ process.priority }}</span></td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

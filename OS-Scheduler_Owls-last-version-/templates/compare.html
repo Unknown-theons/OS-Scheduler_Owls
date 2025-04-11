@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Algorithm Comparison</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .comparison-section {
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .process-info {
+            margin-top: 20px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .error-message {
+            color: #dc3545;
+            padding: 15px;
+            background-color: #f8d7da;
+            border-radius: 4px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .comparison-image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            margin: 0 auto;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f8f9fa;
+            font-weight: bold;
+        }
+        tr:hover {
+            background-color: #f5f5f5;
+        }
+        .refresh-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .refresh-button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Scheduling Algorithms Comparison</h1>
+        
+        <div class="comparison-section">
+            {% if error %}
+                <div class="error-message">
+                    {{ error }}
+                </div>
+            {% else %}
+                {% if comparison_file %}
+                    <img src="{{ url_for('static', filename=comparison_file) }}?t={{ timestamp }}" 
+                         alt="Algorithm Comparison" 
+                         class="comparison-image">
+                {% else %}
+                    <div class="error-message">
+                        No comparison data available. Please run the schedulers first.
+                    </div>
+                {% endif %}
+            {% endif %}
+            
+            <button onclick="window.location.reload()" class="refresh-button">
+                Refresh Comparison
+            </button>
+        </div>
+        
+        <div class="process-info">
+            <h2>Process Information</h2>
+            <h3>Input Parameters</h3>
+            <ul>
+                <li>Number of Processes: {{ input_params.processes_number }}</li>
+                <li>Arrival Time Statistics: {{ input_params.arrival_time_stats }}</li>
+                <li>Burst Time Statistics: {{ input_params.burst_time_stats }}</li>
+                <li>Lambda Priority: {{ input_params.lambda_priority }}</li>
+            </ul>
+            
+            <h3>Process Details</h3>
+            <table>
+                <tr>
+                    <th>Process ID</th>
+                    <th>Arrival Time</th>
+                    <th>Burst Time</th>
+                    <th>Priority</th>
+                </tr>
+                {% for process in processes %}
+                <tr>
+                    <td>{{ process.process_id }}</td>
+                    <td>{{ process.arrival_time }}</td>
+                    <td>{{ process.burst_time }}</td>
+                    <td>{{ process.priority }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+    </div>
+</body>
+</html> 

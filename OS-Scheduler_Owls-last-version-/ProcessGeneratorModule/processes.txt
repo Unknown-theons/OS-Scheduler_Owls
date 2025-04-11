@@ -1,0 +1,6 @@
+Process ID     Arrival Time   Burst Time     Priority       
+P1             11             22             7              
+P2             12             8              6              
+P3             14             5              5              
+P4             0              25             3              
+P5             9              2              6              
