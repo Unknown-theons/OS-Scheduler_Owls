@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Round Robin Scheduler Results</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f0f2f5;
+            padding: 20px;
+        }
+        .results-card {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .results-header {
+            background-color: #198754;
+            color: #fff;
+            padding: 15px 20px;
+            font-size: 1.2rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .results-header i {
+            font-size: 1.4rem;
+        }
+        .results-body {
+            padding: 20px;
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+        }
+        .averages {
+            background-color: #f8f9fa;
+            padding: 15px 20px;
+            border-top: 1px solid #dee2e6;
+        }
+        .back-btn {
+            margin-bottom: 20px;
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Back Button -->
+        <div class="back-btn">
+            <a href="{{ url_for('index') }}" class="btn btn-outline-dark">
+                <i class="bi bi-arrow-left"></i> Back to Home
+            </a>
+        </div>
+
+        <!-- Round Robin Results Card -->
+        <div class="results-card">
+            <div class="results-header">
+                <i class="bi bi-arrow-repeat"></i>
+                Round Robin Results
+            </div>
+            <div class="results-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Process ID</th>
+                                <th>Arrival Time</th>
+                                <th>Burst Time</th>
+                                <th>Completion</th>
+                                <th>Turnaround</th>
+                                <th>Waiting</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if round_robin_output and round_robin_output.processes %}
+                                {% for process in round_robin_output.processes %}
+                                    <tr>
+                                        <td><span class="badge bg-primary">{{ process.pid }}</span></td>
+                                        <td>{{ "%.2f"|format(process.arrival) }}</td>
+                                        <td>{{ "%.2f"|format(process.burst) }}</td>
+                                        <td>{{ "%.2f"|format(process.completion) }}</td>
+                                        <td>{{ "%.2f"|format(process.turnaround) }}</td>
+                                        <td>{{ "%.2f"|format(process.waiting) }}</td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% if round_robin_output and round_robin_output.averages %}
+                <div class="averages">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Average Waiting Time:</strong> 
+                            {{ "%.2f"|format(round_robin_output.averages.waiting) }}
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Average Turnaround Time:</strong>
+                            {{ "%.2f"|format(round_robin_output.averages.turnaround) }}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
